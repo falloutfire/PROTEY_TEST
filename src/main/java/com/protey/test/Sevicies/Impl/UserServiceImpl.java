@@ -7,6 +7,8 @@ import com.protey.test.Sevicies.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,6 +29,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Optional<User> getUser(long id) {
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.MINUTE, -5);
+        Date previousMinutes = cal.getTime();
+
+        userRepository.updateStatus(previousMinutes);
         return userRepository.findById(id);
     }
 
@@ -48,6 +55,7 @@ public class UserServiceImpl implements UserService {
             User user = opt.get();
             status = Optional.of(new UserStatus(user.getId(), user.getStatus(), userStatus.getNewStatus()));
             user.setStatus(userStatus.getNewStatus());
+            user.setOnlineTime(new Date());
             userRepository.saveAndFlush(user);
         }
         return status;

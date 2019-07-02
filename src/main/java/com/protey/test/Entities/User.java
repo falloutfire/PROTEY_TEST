@@ -2,6 +2,8 @@ package com.protey.test.Entities;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
+import java.util.Date;
+
 
 @Entity
 @Table(name = "Users")
@@ -21,6 +23,9 @@ public class User {
     private String phoneNumber;
     @Enumerated(EnumType.STRING)
     private Status status;
+    @Column(name = "online_time")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date onlineTime;
 
     public User() {
     }
@@ -30,6 +35,7 @@ public class User {
         this.email = email;
         this.phoneNumber = phoneNumber;
         this.status = Status.Online;
+        this.onlineTime = new Date();
     }
 
     public User(String username, String email, String phoneNumber, Status status) {
@@ -37,6 +43,7 @@ public class User {
         this.email = email;
         this.phoneNumber = phoneNumber;
         this.status = status;
+        this.onlineTime = new Date();
     }
 
     public long getId() {
@@ -77,6 +84,26 @@ public class User {
 
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    public Date getOnlineTime() {
+        return onlineTime;
+    }
+
+    public void setOnlineTime(Date onlineTime) {
+        this.onlineTime = onlineTime;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", username='" + username + '\'' +
+                ", email='" + email + '\'' +
+                ", phoneNumber='" + phoneNumber + '\'' +
+                ", status=" + status +
+                ", onlineTime=" + onlineTime +
+                '}';
     }
 }
 
