@@ -7,11 +7,13 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.stereotype.Component;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
@@ -21,6 +23,7 @@ import java.util.stream.Collectors;
 
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @ControllerAdvice
+@Component
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
     // Не сформированный json
@@ -31,7 +34,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
                                                                   WebRequest request) {
         ApiError apiError = new ApiError(
                 HttpStatus.BAD_REQUEST, "Malformed JSON request", ex);
-        return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
+        return new ResponseEntity<>(apiError, apiError.getStatus());
     }
 
     // Не прошедший @Valid аругмент
@@ -49,7 +52,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
         ApiError apiError = new ApiError(
                 HttpStatus.BAD_REQUEST, "Not valid arguments", errors);
-        return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
+        return new ResponseEntity<>(apiError, status);
     }
 
     // Отсутсвует запрашиваемая сущность
@@ -57,8 +60,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<Object> handleNotFoundEntity(Exception ex, WebRequest request) {
         ApiError apiError = new ApiError(
                 HttpStatus.INTERNAL_SERVER_ERROR, "Not found entity", ex.getMessage());
-        return handleExceptionInternal(ex, apiError,
-                new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, request);
+        return new ResponseEntity<>(apiError, apiError.getStatus());
     }
 
     //Для всех непроверенных исключений
@@ -66,7 +68,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<Object> handleAll(Exception ex, WebRequest request) {
         ApiError apiError = new ApiError(
                 HttpStatus.INTERNAL_SERVER_ERROR, "Exception", ex.getMessage());
-        return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
+        return new ResponseEntity<>(apiError, apiError.getStatus());
     }
 
     // Не поддерживаемый метод HTTP
@@ -82,8 +84,8 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         Objects.requireNonNull(ex.getSupportedHttpMethods()).forEach(t -> builder.append(t).append(" "));
 
         ApiError apiError = new ApiError(HttpStatus.METHOD_NOT_ALLOWED,
-                ex.getLocalizedMessage(), builder.toString());
-        return new ResponseEntity<>(apiError, new HttpHeaders(), status);
+                builder.toString(), ex.getLocalizedMessage());
+        return new ResponseEntity<>(apiError, status);
     }
 
     // Ответ 404
@@ -94,7 +96,15 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
                                                                    WebRequest request) {
 
         String builder = "No handler found for " + ex.getHttpMethod() + ex.getRequestURL();
-        ApiError apiError = new ApiError(HttpStatus.NOT_FOUND, ex.getLocalizedMessage(), builder);
-        return new ResponseEntity<>(apiError, new HttpHeaders(), apiError.getStatus());
+        ApiError apiError = new ApiError(HttpStatus.NOT_FOUND, builder, ex.getLocalizedMessage());
+        return new ResponseEntity<>(apiError, status);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    protected ResponseEntity<Object> handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException ex,
+                                                                      WebRequest request) {
+        String builder = String.format("The parameter '%s' of value '%s' could not be converted to type '%s'", ex.getName(), ex.getValue(), Objects.requireNonNull(ex.getRequiredType()).getSimpleName());
+        ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST, builder, ex.getLocalizedMessage());
+        return new ResponseEntity<>(apiError, apiError.getStatus());
     }
 }
