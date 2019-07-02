@@ -1,4 +1,4 @@
-package com.protey.test.Controllers;
+package com.protey.test.Controllers.Handlers;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.http.HttpStatus;

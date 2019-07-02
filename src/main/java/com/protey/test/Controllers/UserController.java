@@ -1,5 +1,7 @@
 package com.protey.test.Controllers;
 
+import com.protey.test.Controllers.Handlers.ApiResponse;
+import com.protey.test.Controllers.Handlers.EntityNotFoundException;
 import com.protey.test.Entities.User;
 import com.protey.test.Entities.UserStatus;
 import com.protey.test.Sevicies.UserService;

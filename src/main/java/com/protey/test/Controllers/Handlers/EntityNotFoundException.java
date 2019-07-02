@@ -1,4 +1,4 @@
-package com.protey.test.Controllers;
+package com.protey.test.Controllers.Handlers;
 
 import org.springframework.util.StringUtils;
 
