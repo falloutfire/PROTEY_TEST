@@ -17,4 +17,6 @@ public interface UserService {
     List<User> getAllUser();
 
     Optional<UserStatus> changeStatus(UserStatus userStatus);
+
+    void updateStatus();
 }

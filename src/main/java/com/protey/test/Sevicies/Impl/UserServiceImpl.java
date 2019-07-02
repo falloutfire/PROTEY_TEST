@@ -29,11 +29,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Optional<User> getUser(long id) {
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.MINUTE, -5);
-        Date previousMinutes = cal.getTime();
-
-        userRepository.updateStatus(previousMinutes);
         return userRepository.findById(id);
     }
 
@@ -59,5 +54,14 @@ public class UserServiceImpl implements UserService {
             userRepository.saveAndFlush(user);
         }
         return status;
+    }
+
+    @Override
+    public void updateStatus() {
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.MINUTE, -5);
+        Date previousMinutes = cal.getTime();
+
+        userRepository.updateStatus(previousMinutes);
     }
 }
